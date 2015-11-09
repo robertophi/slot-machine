@@ -1,0 +1,74 @@
+--GERADOR DE CLOCK COM DUAS VELOCIDADES DEFINIDAS POR 'chave'
+
+library  ieee; 
+use  ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+entity seletor_nivel is
+  port ( chave : in std_LOGIC;
+			RESET : IN STD_LOGIC;
+         CLOCK : IN STD_LOGIC;
+			DELay_out: OUT STD_LOGIC
+			
+  );
+end seletor_nivel;
+
+architecture topo_estru of seletor_nivel is
+	type states is (E1,E2,E3);
+	signal EA, PE:states;
+	signal contagem : std_logic_vector(7 downto 0);
+	
+	
+begin
+
+
+P1: process(clock,reset)
+		begin	
+			if reset = '0' then
+				EA <=E1;
+				
+			elsif clock'event and clock='1' then
+				EA<=PE;
+			end if;
+end process;
+
+P2:process(clock,reset)
+variable MAX : integer:=10;
+variable contagem : integer:=0;
+---variavel integer só pode ser criado e usado dentro de processo
+--criado depois de 'process' e antes de 'begin'
+--assign value usando VARIABLE := VALUE
+begin
+
+if chave='1' then
+	max:=15;
+else
+	max:=7;
+end if;
+
+  IF (reset='0') THEN   --- CASO RESET =1
+		PE <= E1;
+  ELsif(clock'event and clock='0')THEN
+ 
+	
+		case EA is
+			when E1=>
+				contagem:=0;
+				PE <=E2;
+				delay_out<='0';
+			when E2=>
+			   contagem:=contagem+1;
+				PE<=E3;
+			when E3=>
+				if contagem >=MAX then   ---contagem aumenta em 1 a cada 3 ciclos
+					delay_out<='1';			 ---1 ciclo = 1s/50M, aumenta 1 a cada 3/50M
+					PE<=E1;						 --- 1 = x*3/50M, x = 111101000010010000000000
+					
+				else
+					PE<=E2;
+				end if;
+		end case;
+end if;
+end process;
+
+end topo_estru;
